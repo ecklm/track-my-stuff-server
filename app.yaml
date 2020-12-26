@@ -1,0 +1,19 @@
+# https://cloud.google.com/appengine/docs/standard/go/config/appref#runtime_and_app_elements
+runtime: go114
+instance_class: B1
+env: standard
+handlers:
+  # https://developers.google.com/maps/documentation/javascript/examples/polyline-simple
+  - url: /map/?$
+    static_files: map/index.html
+    upload: map/index.html
+    secure: always
+  - url: /map
+    static_dir: map
+    secure: always
+  - url: .*
+    script: auto
+    secure: always
+basic_scaling:
+  max_instances: 1
+  idle_timeout: 5m
