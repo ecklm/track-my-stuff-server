@@ -35,8 +35,22 @@ var (
         "records": "track-records",
         "positions": "track-positions",
         "entities": "track-entities",
+        "users": "users",
     }
+    authConfig = middleware.BasicAuthConfig{
+        Validator: authenticate,
+        Skipper: func(c echo.Context) bool {
+            if c.Path() == gcloud_operation_handler_route {
+                return true
+            }
+            return false
+        },
+        Realm:   "Restricted",
+    }
+    auth_middleware = middleware.BasicAuthWithConfig(authConfig)
 )
+
+const gcloud_operation_handler_route = "/_ah/:operation"
 
 func init() {
     dotenv_file := os.Getenv("DOTENV_FILE")
@@ -56,9 +70,11 @@ func main() {
     e := echo.New()
 
     e.Use(middleware.Logger())
-    e.Use(middleware.Recover())
+    e.Use(auth_middleware)
 
+    e.Static("/", "map")
     e.Static("/map", "map")
+    e.Any(gcloud_operation_handler_route, handleGcloudOperation)
 
     api := e.Group("/api/v1")
 
@@ -79,6 +95,16 @@ func main() {
     e.Logger.Fatal(e.Start(":8080"))
 }
 
+func authenticate(username, password string, c echo.Context) (bool, error) {
+    doc, err := firestore_client.Collection(firestore_collection["users"]).
+        Doc(username).Get(firestore_context)
+    if err != nil {
+        return false, nil
+    }
+    user := doc.Data()
+    return user["username"] == username && user["password"] == password, nil
+}
+
 type Position struct {
     Longitude float32 `json:"longitude" form:"longitude" query:"longitude"`
     Latitude float32 `json:"latitude" form:"latitude" query:"latitude"`
@@ -88,6 +114,10 @@ type Record struct {
     Entity string
     Position Position
     Time time.Time
+}
+
+func handleGcloudOperation(c echo.Context) error {
+        return c.NoContent(http.StatusNotFound)
 }
 
 func addRecord(c echo.Context) error {

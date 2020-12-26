@@ -6,7 +6,7 @@ env_variables:
   DOTENV_FILE: .prod.env
 handlers:
   # https://developers.google.com/maps/documentation/javascript/examples/polyline-simple
-  - url: /map/?$
+  - url: /(map/?)?$
     static_files: map/index.html
     upload: map/index.html
     secure: always
