@@ -2,6 +2,8 @@
 runtime: go114
 instance_class: B1
 env: standard
+env_variables:
+  DOTENV_FILE: .prod.env
 handlers:
   # https://developers.google.com/maps/documentation/javascript/examples/polyline-simple
   - url: /map/?$

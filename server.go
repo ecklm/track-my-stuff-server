@@ -12,6 +12,7 @@ import (
     "github.com/labstack/echo/v4/middleware"
     "cloud.google.com/go/firestore"
     "google.golang.org/api/iterator"
+    "github.com/joho/godotenv"
 )
 
 func createClient(firestore_context context.Context) *firestore.Client {
@@ -38,6 +39,13 @@ var (
 )
 
 func init() {
+    dotenv_file := os.Getenv("DOTENV_FILE")
+    if dotenv_file == "" {
+        dotenv_file = ".env"
+    }
+    godotenv.Load(dotenv_file)
+    log.Printf("Environment file to load: %s\n", dotenv_file)
+
     firestore_context = context.Background()
     firestore_client = createClient(firestore_context)
 }
