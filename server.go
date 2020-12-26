@@ -121,7 +121,7 @@ func getRecords(c echo.Context) error {
     iter := firestore_client.Collection(firestore_collection["records"]).
         // Where and OrderBy doesn't work combined here for some reason...
         // Where("Entity", "==", entity).
-        OrderBy("Time", firestore.Desc).
+        OrderBy("Time", firestore.Desc).Limit(1000).
         Documents(firestore_context)
     for {
         doc, err := iter.Next()
