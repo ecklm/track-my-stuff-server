@@ -27,18 +27,19 @@ func createClient(firestore_context context.Context) *firestore.Client {
         return firestore_client
 }
 
-var firestore_context context.Context
-var firestore_client *firestore.Client
-var records_collection string
-var position_collection string
-var entity_collection string
+var (
+    firestore_context context.Context
+    firestore_client *firestore.Client
+    firestore_collection = map[string]string{
+        "records": "track-records",
+        "positions": "track-positions",
+        "entities": "track-entities",
+    }
+)
 
 func init() {
     firestore_context = context.Background()
     firestore_client = createClient(firestore_context)
-    records_collection = "track-records"
-    position_collection = "track-positions"
-    entity_collection = "track-entities"
 }
 
 func main() {
@@ -88,7 +89,7 @@ func addRecord(c echo.Context) error {
 
     new_record := Record{c.Param("entity"), *position, time.Now()}
 
-    _, _, err := firestore_client.Collection(records_collection).
+    _, _, err := firestore_client.Collection(firestore_collection["records"]).
         Add(firestore_context, new_record)
     if err != nil {
         return c.JSON(http.StatusInternalServerError,
@@ -107,7 +108,7 @@ func getRecords(c echo.Context) error {
 
     var results []map[string]interface{}
 
-    iter := firestore_client.Collection(records_collection).
+    iter := firestore_client.Collection(firestore_collection["records"]).
         // Where and OrderBy doesn't work combined here for some reason...
         // Where("Entity", "==", entity).
         OrderBy("Time", firestore.Desc).
@@ -131,7 +132,7 @@ func getRecords(c echo.Context) error {
 }
 
 func setPosition(c echo.Context, new_record Record) error {
-    _, err := firestore_client.Collection(position_collection).
+    _, err := firestore_client.Collection(firestore_collection["positions"]).
         Doc(new_record.Entity).Set(firestore_context, new_record)
     if err != nil {
         return c.JSON(http.StatusInternalServerError,
@@ -143,7 +144,7 @@ func setPosition(c echo.Context, new_record Record) error {
 func getPosition(c echo.Context) error {
     entity := c.Param("entity")
 
-    doc, err := firestore_client.Collection(position_collection).
+    doc, err := firestore_client.Collection(firestore_collection["positions"]).
         Doc(entity).Get(firestore_context)
     if err != nil {
         return c.JSON(http.StatusInternalServerError,
@@ -155,7 +156,7 @@ func getPosition(c echo.Context) error {
 func listEntities(c echo.Context) error {
     entities := []map[string]interface{}{}
 
-    iter := firestore_client.Collection(entity_collection).
+    iter := firestore_client.Collection(firestore_collection["entities"]).
         Documents(firestore_context)
     for {
         doc, err := iter.Next()
