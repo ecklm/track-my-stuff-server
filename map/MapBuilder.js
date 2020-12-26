@@ -1,13 +1,14 @@
 function initMap() {
+    const api_prefix = "/api/v1"
     const map = new google.maps.Map(document.getElementById("map"), {
         zoom: 14,
         center: { lat: 47.4725424, lng: 19.0437153 },
         mapTypeId: "terrain",
     });
-    $.get("/entity", function(entities, status){
+    $.get(api_prefix + "/entity", function(entities, status){
       for (i in entities) {
           const entity = entities[i]
-          $.get("/records/" + entity.Name, function(data, status){
+          $.get(api_prefix + "/record/" + entity.Name, function(data, status){
              flightPlanCoordinates = []
              for (i in data) {
                  flightPlanCoordinates.push({
@@ -25,7 +26,7 @@ function initMap() {
              flightPath.setMap(map);
           })
 
-          $.get("/position/" + entity.Name, function(data, status){
+          $.get(api_prefix + "/position/" + entity.Name, function(data, status){
              const newMarker = new google.maps.Marker({
                  position: {
                      lat: data.Position.Latitude,

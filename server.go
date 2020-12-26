@@ -52,14 +52,16 @@ func main() {
 
     e.Static("/map", "map")
 
-    e.GET("/records/:entity", getRecords)
-    e.POST("/records/:entity", addRecord)
+    api := e.Group("/api/v1")
 
-    e.GET("/position/:entity", getPosition)
+    api.GET("/record/:entity", getRecords)
+    api.POST("/record/:entity", addRecord)
 
-    e.GET("/entity", listEntities)
+    api.GET("/position/:entity", getPosition)
 
-    e.GET("/api/proxy/maps.api.js", func(c echo.Context)error{
+    api.GET("/entity", listEntities)
+
+    api.GET("/proxy/maps.api.js", func(c echo.Context)error{
         url := fmt.Sprintf(
             "https://maps.googleapis.com/maps/api/js?key=%s&callback=initMap&libraries=&v=weekly",
             os.Getenv("GOOGLE_MAPS_API_KEY"))
