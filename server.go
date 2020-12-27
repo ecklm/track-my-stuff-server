@@ -92,7 +92,11 @@ func main() {
         return c.Redirect(http.StatusMovedPermanently, url)
     })
 
-    e.Logger.Fatal(e.Start(":8080"))
+    listen_port := os.Getenv("PORT")
+    if listen_port == "" {
+        listen_port = "8080"
+    }
+    e.Logger.Fatal(e.Start(":" + listen_port))
 }
 
 func authenticate(username, password string, c echo.Context) (bool, error) {
