@@ -67,16 +67,25 @@ func init() {
 func main() {
     defer firestore_client.Close()
 
-    e := echo.New()
+    server := echo.New()
+    setUp(server)
 
-    e.Use(middleware.Logger())
-    e.Use(auth_middleware)
+    listen_port := os.Getenv("PORT")
+    if listen_port == "" {
+        listen_port = "8080"
+    }
+    server.Logger.Fatal(server.Start(":" + listen_port))
+}
 
-    e.Static("/", "map")
-    e.Static("/map", "map")
-    e.Any(gcloud_operation_handler_route, handleGcloudOperation)
+func setUp(server *echo.Echo) {
+    server.Use(middleware.Logger())
+    server.Use(auth_middleware)
 
-    api := e.Group("/api/v1")
+    server.Static("/", "map")
+    server.Static("/map", "map")
+    server.Any(gcloud_operation_handler_route, handleGcloudOperation)
+
+    api := server.Group("/api/v1")
 
     api.GET("/record/:entity", getRecords)
     api.POST("/record/:entity", addRecord)
@@ -91,12 +100,6 @@ func main() {
             os.Getenv("GOOGLE_MAPS_API_KEY"))
         return c.Redirect(http.StatusMovedPermanently, url)
     })
-
-    listen_port := os.Getenv("PORT")
-    if listen_port == "" {
-        listen_port = "8080"
-    }
-    e.Logger.Fatal(e.Start(":" + listen_port))
 }
 
 func authenticate(username, password string, c echo.Context) (bool, error) {
